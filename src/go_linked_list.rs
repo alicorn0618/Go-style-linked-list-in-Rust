@@ -10,7 +10,8 @@ pub struct List<T> {
     len: usize,
 }
 
-pub type Link<T> = Option<Rc<RefCell<Node<T>>>>;
+pub type Link<T> = Option<NodeRef<T>>;
+pub type NodeRef<V> = Rc<RefCell<Node<V>>>;
 
 #[derive(Debug)]
 pub struct Node<T> {
@@ -53,7 +54,7 @@ impl<T> List<T> {
         self.push_node_front(new_head);
     }
 
-    fn push_node_front(&mut self, new_head: Rc<RefCell<Node<T>>>) {
+    fn push_node_front(&mut self, new_head: NodeRef<T>) {
         match self.head.take() {
             Some(old_head) => {
                 old_head.borrow_mut().prev = Some(new_head.clone());
@@ -73,7 +74,7 @@ impl<T> List<T> {
         self.push_node_back(new_tail);
     }
 
-    fn push_node_back(&mut self, new_tail: Rc<RefCell<Node<T>>>) {
+    fn push_node_back(&mut self, new_tail: NodeRef<T>) {
         match self.tail.take() {
             Some(old_tail) => {
                 old_tail.borrow_mut().next = Some(new_tail.clone());
@@ -152,7 +153,7 @@ impl<T> List<T> {
         IntoIter(self)
     }
 
-    pub fn remove(&mut self, node: Rc<RefCell<Node<T>>>) {
+    pub fn remove(&mut self, node: NodeRef<T>) {
         let mut node_borrow = node.borrow_mut();
         if let Some(prev_node) = node_borrow.prev.as_ref() {
             prev_node.borrow_mut().next = node_borrow.next.clone();
@@ -173,13 +174,13 @@ impl<T> List<T> {
         }
     }
 
-    pub fn is_head(&self, node: Rc<RefCell<Node<T>>>) -> bool {
+    pub fn is_head(&self, node: NodeRef<T>) -> bool {
         self.head
             .as_ref()
             .map_or(false, |head| Rc::ptr_eq(head, &node))
     }
 
-    pub fn move_to_front(&mut self, node: Rc<RefCell<Node<T>>>) {
+    pub fn move_to_front(&mut self, node: NodeRef<T>) {
         if self.is_head(node.clone()) {
             return;
         }
