@@ -180,12 +180,26 @@ impl<T> List<T> {
             .map_or(false, |head| Rc::ptr_eq(head, &node))
     }
 
+    pub fn is_tail(&self, node: NodeRef<T>) -> bool {
+        self.tail
+            .as_ref()
+            .map_or(false, |tail| Rc::ptr_eq(tail, &node))
+    }
+
     pub fn move_to_front(&mut self, node: NodeRef<T>) {
         if self.is_head(node.clone()) {
             return;
         }
         self.remove(node.clone());
         self.push_node_front(node);
+    }
+
+    pub fn move_to_back(&mut self, node: NodeRef<T>) {
+        if self.is_tail(node.clone()) {
+            return;
+        }
+        self.remove(node.clone());
+        self.push_node_back(node);
     }
 }
 
@@ -400,5 +414,30 @@ mod test {
         list.move_to_front(node2);
         assert_eq!(list.len(), 5);
         assert_eq!(&*list.peek_front().unwrap(), &2);
+    }
+
+    #[test]
+    fn test_move_to_back() {
+        let mut list = List::new();
+        let node1 = Node::new(1);
+        let node2 = Node::new(2);
+        let node3 = Node::new(3);
+        let node4 = Node::new(4);
+        let node5 = Node::new(5);
+
+        list.push_node_front(node1.clone());
+        list.push_node_front(node2.clone());
+        list.push_node_front(node3.clone());
+        list.push_node_front(node4.clone());
+        list.push_node_front(node5.clone());
+        assert_eq!(list.len(), 5);
+
+        list.move_to_back(node3);
+        assert_eq!(list.len(), 5);
+        assert_eq!(&*list.peek_back().unwrap(), &3);
+
+        list.move_to_back(node2);
+        assert_eq!(list.len(), 5);
+        assert_eq!(&*list.peek_back().unwrap(), &2);
     }
 }
